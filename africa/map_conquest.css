@@ -1,0 +1,56 @@
+.answer_box
+{
+    background : transparent;
+    border : none;
+    font-family:Serif;
+    font-size:16px;
+}
+
+.map_svg{
+    margin-left : auto;
+    margin-right : auto;
+    display : block;
+    width : 100%;
+}
+
+#map{
+    height:90%;
+}
+
+#score_board{
+    margin-left : auto;
+    margin-right : auto;
+    text-align : center;
+    // width : 100%;
+    display : table;
+}
+
+
+
+.score_box{
+    vertical-align : middle;
+    display : table-cell;
+    padding : 15px;
+
+}
+
+.color_square{
+  width : 50;
+  height : 50;
+  display : table-cell;
+
+}
+
+#player1_square{
+    background-color : #6b7fc8;
+}
+
+#player2_square{
+    background-color : #c86b76;
+}
+
+.current_player{
+    border-style : solid;
+    border-width : 5px;
+    border-color : black;
+}

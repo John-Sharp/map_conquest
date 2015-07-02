@@ -1,5 +1,51 @@
 import xml.etree.ElementTree as et
 
+def add_glow(tree):
+    root = tree.getroot()
+    states_layer = tree.find(".//g[@id='states']")
+    states_layer.set("id", "states_group")
+    
+    root.remove(states_layer)
+    
+    defs = et.SubElement(root, "defs")
+    
+    root.append(states_layer)
+    
+    
+    filter_elem = et.SubElement(defs, "filter", {
+                                                  "filterUnits" : "objectBoundingBox",
+                                                   "x" : "-100%",
+                                                   "y" : "-100%",
+                                                   "width" : "300%",
+                                                   "height" : "300%",
+                                                   "color-interpolation-filters" : "sRGB",
+                                                   "id" : "glow_filter"})
+    
+    
+    
+    feGaussian = et.SubElement(filter_elem, "feGaussianBlur", {"id" : "feGaussianBlur4214",
+                                                               "in" : "SourceAlpha",
+                                                               "stdDeviation" : "10",
+                                                               "result" : "blur"})
+    
+    feColorMatrix = et.SubElement(filter_elem, "feColorMatrix", {"in" : "blur",
+                                                                 "result" : "coloured_blur",
+                                                                 "type" : "matrix",
+                                                                 "values" : "0 0 0 0 1 "+
+                                                                            "0 0 0 0 0 "+
+                                                                            "0 0 0 0 0 "+
+                                                                            "0 0 0 1 0 "})
+    
+    
+    merge = et.SubElement(filter_elem, "feMerge")
+    
+    et.SubElement(merge, "feMergeNode", {"in" : "coloured_blur"})
+    et.SubElement(merge, "feMergeNode", {"in" : "SourceGraphic"})
+    
+    
+    return
+        
+    
 tree = et.parse('plain_annotated.svg')
 
 root = tree.getroot()
@@ -9,23 +55,49 @@ for i in root.iter():
         i.tag = i.tag.split("}")[-1]
 
 root.set("style", "position:absolute; z-index:1;")
-root.set("width", "80%")
-root.set("height", "80%")
+root.set("width", "100%")
+root.set("height", "100%")
+root.set("top", "0")
 root.set("class", "map_svg")
 
-states = root.findall(".//path")
+
+
+states = root.findall(".//g[@id='states']//path")
 
 for s in states:
+    s.set("class", "state")
     s.set("onclick", "fillMe(this)")
+    s.set("onmouseover", "hoverState(this)")
+    s.set("onmouseout", "hoverOffState(this)")
+    s.attrib.pop("style")
+
+add_glow(tree)
+outside_countries = root.findall(".//g[@id='background']//path")
+
+for o in outside_countries:
+    o.set("class",'outside_country')
+    o.attrib.pop("style")
 
 tspans = root.findall(".//text")
 
 
 label_input_svg = et.Element("svg", root.attrib)
 label_input_svg.set("style", "position:absolute; z-index:2; pointer-events:none")
-label_input_svg.set("width", "80%")
-label_input_svg.set("height", "80%")
+label_input_svg.set("width", "100%")
+label_input_svg.set("height", "100%")
+label_input_svg.set("top", "0")
 root.set("class", "map_svg")
+
+
+foreground_svg = et.Element("svg", root.attrib)
+foreground_layer = tree.find(".//g[@id='foreground']")
+root.remove(foreground_layer)
+foreground_svg.set("style", "position:absolute; z-index:2; pointer-events:none")
+foreground_svg.set("width", "100%")
+foreground_svg.set("height", "100%")
+foreground_svg.set("top", "0")
+foreground_svg.append(foreground_layer)
+
 
 
 for t in tspans:
@@ -38,14 +110,23 @@ for t in tspans:
     inp = et.SubElement(fo, 'input', {"id": "input_" + state_name , "type" : "text",
         "style" : "width:300; text-align:left", "class" : "answer_box"})
  
+state_names = tree.find(".//g[@id='state_names']")
+root.remove(state_names)
+foreground_svg.append(state_names)
 
 
 html_tree = et.parse("../map_conquest_template.html")
 
+html_root = html_tree.getroot()
+title_div = html_root.find(".//div[@id='map_title']")
+title_div.text = "Europe"
 
 map_div = html_tree.find(".//*[@id='map']")
+map_div.append(foreground_svg)
 map_div.append(label_input_svg)
 map_div.append(root)
+
+et.register_namespace("xlink", "http://www.w3.org/1999/xlink")
 
 
 html_tree.write("europe.html", method="html")

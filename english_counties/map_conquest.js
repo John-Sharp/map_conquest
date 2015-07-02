@@ -1,3 +1,5 @@
+var glow_size = 30;
+var glow_state_group = 0;
 var selectedState = 0;
 var tb = 0 ;
 var fo = 0;
@@ -20,8 +22,27 @@ function fillMe(state){
 
     }
 
+
+    // make it glow
+    if (glow_state_group != 0)
+        glow_state_group.css("visibility", "hidden");
+    glow_state_group = $('#' + state.id + 'glow');
+    glow_state_group.css('visibility', 'visible');
+
+    bounding_rect = state.getBoundingClientRect();
+
+    filter = $('#GlowBlur').get(0);
+    var key_string = ""
+    for(var key in filter){
+         key_string += key + " ";
+    }
+    filter.setStdDeviation(glow_size*bounding_rect.width/100, glow_size*bounding_rect.height/100);
+
+
+
+
     // Reset textbox, select state
-    state.style.fill = "#d0b4cb";
+    // state.style.fill = "#d0b4cb";
     selectedState = state;
     if (fo != 0)
         fo.css("visibility", "hidden");
@@ -38,6 +59,8 @@ function keyPressed(event){
     if (event.keyCode == 13 && tb != 0){ // 'enter' pressed
         attempt = tb.val().toUpperCase().replace(/ /g, '_');
 
+        glow_state_group.css('visibility', 'hidden');
+        fo.css("visibility", "hidden");
         if(attempt == selectedState.id.toUpperCase()){
             guessedRight();
         }else{

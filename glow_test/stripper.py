@@ -1,53 +1,99 @@
 import xml.etree.ElementTree as et
 
 
+
+class GlowAdder():
+    def __init__(self, tree):
+        self.root = tree.getroot()
+        self.width = self.root.get("width")
+        self.height = self.root.get("height")
+        states = tree.findall(".//path[@class='state']")
+
+        for s in states:
+            self.root.remove(s)
+    
+        self.defs = et.SubElement(self.root, "defs")
+
+        for s in states:
+            self.root.append(s)
+            # et.SubElement(self.root, "path", s.attrib)
+    
+        self.glow_layer = et.SubElement(self.root, "g", {"id" : "glow_layer"})
+    
+        # filter_elem = et.SubElement(self.defs, "filter", {
+        #                                              "filterUnits" : "objectBoundingBox",
+        #                                              "x" : "-30%",
+        #                                              "y" : "-30%",
+        #                                              "width" : "160%",
+        #                                              "height" : "160%",
+        #                                              "color-interpolation-filters" : "sRGB",
+        #                                              "id" : "glow_filter"})
+        
+        filter_elem = et.SubElement(self.defs, "filter", {
+                                                     "filterUnits" : "objectBoundingBox",
+                                                     "x" : "-60%",
+                                                     "y" : "-60%",
+                                                     "width" : "260%",
+                                                     "height" : "260%",
+                                                     "color-interpolation-filters" : "sRGB",
+                                                     "id" : "glow_filter"})
+
+
+
+        feGaussian = et.SubElement(filter_elem, "feGaussianBlur", {"id" : "feGaussianBlur4214",
+                                                                   "in" : "SourceAlpha",
+                                                                   "stdDeviation" : "10",
+                                                                   "result" : "blur"})
+
+        feColorMatrix = et.SubElement(filter_elem, "feColorMatrix", {"in" : "blur",
+                                                                     "result" : "coloured_blur",
+                                                                     "type" : "matrix",
+                                                                     "values" : "0 0 0 0 1 "+
+                                                                                "0 0 0 0 0 "+
+                                                                                "0 0 0 0 0 "+
+                                                                                "0 0 0 1 0 "})
+
+
+        merge = et.SubElement(filter_elem, "feMerge")
+
+        et.SubElement(merge, "feMergeNode", {"in" : "coloured_blur"})
+        et.SubElement(merge, "feMergeNode", {"in" : "SourceGraphic"})
+
+    
+        return
+        
+    
+    def add_glow(self, state):
+        glow_style = "fill:#dedea4;fill-opacity:1;stroke:#959183;stroke-width:0.2932176;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;filter:url(#glow_filter)" 
+        state.set("style", glow_style)
+        # state.set("class", state.get("class") + "_glow")
+        # state.set("id", state.get("id") + "_glow")
+
+
+    
+    
+
+
+
 tree = et.parse('input_p.svg')
-
-
-
 root = tree.getroot()
+
+
 
 for i in root.iter():
     if i.tag.split("}")[0][1:] == "http://www.w3.org/2000/svg":
         i.tag = i.tag.split("}")[-1]
-
 states = tree.findall(".//path[@class='state']")
-root.remove(states[0])
-print states
+ga = GlowAdder(tree)
 
-width = root.get("width")
-height = root.get("height")
+# ga.add_glow(states[1])
+print states[0].get("id")
+# for s in states:
+#     ga.add_glow(s)
 
-defs = et.SubElement(root, "defs")
-mask = et.SubElement(defs, "mask", {"id" : "glow_mask"})
-group = et.SubElement(mask, "g")
-mask_rect_style = "color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" 
-et.SubElement(group, "rect", {"width"  : width,
-                              "height" : height,
-                              "x"      : "0",
-                              "y"      : "0",
-                              "style"  : mask_rect_style})
-
-state_mask_style = "fill:#000000;fill-opacity:1;stroke:#959183;stroke-width:0.2932176;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-
-p = et.SubElement(group, "path", states[0].attrib)
-p.set("style", state_mask_style)
-
-filter_elem = et.SubElement(defs, "filter", {"x" : "-0.30407429",
-                                             "y" : "-0.34999749",
-                                             "width" : "1.6081486",
-                                             "height" : "1.699995",
-                                             "color-interpolation-filters" : "sRGB",
-                                             "id" : "glow_filter"})
-
-feGaussian = et.SubElement(filter_elem, "feGaussianBlur", {"id" : "feGaussianBlur4214",
-                                                           "stdDeviation" : "8.7913684"})
-
-state = et.SubElement(root, "path", states[0].attrib)
-state.set("mask", "url(#glow_mask)")
-
-glow_style = "fill:#a100be;fill-opacity:1;stroke:#959183;stroke-width:0.2932176;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;filter:url(#glow_filter)" 
-state.set("style", glow_style)
+ga.add_glow(states[0])
 
 
+import os
 tree.write("output.svg")
+os.system("python2 copy_into_html.py")

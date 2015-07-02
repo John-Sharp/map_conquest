@@ -1,0 +1,55 @@
+have a mask
+
+<defs>
+
+<mask id="whatever">
+
+<g>
+
+
+add rectangle, height and width same as that of the svg element, x and y 0
+
+<rect
+           width="256.42856"
+           height="177.14285"
+           x="245"
+           y="452.36218"
+           id="rect4189"
+           style="color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+
+have the path of the country you want to make glow
+
+change style to
+
+style="fill:#000000;fill-opacity:1;stroke:#959183;stroke-width:0.2932176;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+
+
+</g>
+</mask>
+
+
+make the blur filter...
+
+<filter
+       x="-0.30407429"
+       y="-0.34999749"
+       width="1.6081486"
+       height="1.699995"
+       color-interpolation-filters="sRGB"
+       id="filter4212">
+      <feGaussianBlur
+         id="feGaussianBlur4214"
+         stdDeviation="8.7913684" />
+    </filter>
+
+</defs>
+
+change the path...
+
+give it a mask attribute
+mask="url(#mask4185)"
+
+give it a new style
+style="fill:#a100be;fill-opacity:1;stroke:#959183;stroke-width:0.2932176;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;filter:url(#filter4212)" 
+
+you're done!
